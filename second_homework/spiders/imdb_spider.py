@@ -5,7 +5,7 @@ class ImdbSpider(scrapy.Spider):
     
     name = 'imdb_spider' #each spider
     
-    start_urls = ['https://www.imdb.com/title/tt4633694/'] #the urls that user wants to look at
+    start_urls = ['https://www.imdb.com/title/tt4633694/', 'https://www.imdb.com/title/tt0111161/'] #the urls that user wants to look at
     
     def parse(self, response):
         
