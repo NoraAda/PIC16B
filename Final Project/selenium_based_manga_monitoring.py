@@ -104,6 +104,8 @@ def start_or_reload_display(driver_name='Chrome',
         )
         
         virtual_display.start()
+    else:
+        virtual_display = None
     
     if driver_name == 'Chrome':
         selenium_object = webdriver.Chrome()
@@ -276,7 +278,7 @@ def get_processed_core_page(selenium_object,
 get_user_input()
 
 # prepare webdriver
-selenium_spider, virtual_display = start_or_reload_display(driver_name='Chrome', detach_display=True)
+selenium_spider, virtual_display = start_or_reload_display(driver_name='Chrome', detach_display=False)
 
 # specify a group of resources with the same CSS elements
 urls_batch_1 = ['https://1stkissmanga.io', 
