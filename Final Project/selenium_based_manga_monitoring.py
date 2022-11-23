@@ -163,17 +163,36 @@ urls_batch_1 = ['https://1stkissmanga.io',
 
 for url in urls_batch_1:
     
-    user_input_1_readapted = '+'.join(user_input_1.lower().split())
-    searching_url = url + f'/?s={user_input_1_readapted}&post_type=wp-manga'
+    direct_link_to_manga = f'{url}/manga/{user_input_1_adapted}'
+    selenium_spider.get(direct_link_to_manga)
     
-    selenium_spider.get(searching_url)
+    list_of_heading_elements_found = selenium_spider.find_elements("css selector", '.heading')
     
-    get_processed_core_page(selenium_object=selenium_spider, 
-                            good_css_selector='span.font-meta:nth-child(2)', 
-                            url_to_print=url, 
-                            chapters_already_read=user_input_2, 
-                            good_css_selector_num=0, 
-                            bad_css_selector='.not-found-content')
+    if len(list_of_heading_elements_found) > 0 and (
+       list_of_heading_elements_found[0].text != 'Oops! page not found.'):
+        
+        get_processed_core_page(selenium_object=selenium_spider, 
+                                good_css_selector='li.wp-manga-chapter:nth-child(1) > a:nth-child(1)', 
+                                url_to_print=url, 
+                                chapters_already_read=user_input_2, 
+                                good_css_selector_num=0, 
+                                bad_css_selector='.not-found-content')
+        
+    else:
+        
+        user_input_1_readapted = '+'.join(user_input_1.lower().split())
+        searching_url = url + f'/?s={user_input_1_readapted}&post_type=wp-manga'
+        
+        selenium_spider.get(searching_url)
+        
+        get_processed_core_page(selenium_object=selenium_spider, 
+                                good_css_selector='span.font-meta:nth-child(2)', 
+                                url_to_print=url, 
+                                chapters_already_read=user_input_2, 
+                                good_css_selector_num=0, 
+                                bad_css_selector='.not-found-content')
+
+print()
 
 selenium_spider.quit()
 if virtual_display is not None:
