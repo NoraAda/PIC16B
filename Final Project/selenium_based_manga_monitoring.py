@@ -123,8 +123,12 @@ def print_output_message(url_to_print,
         message += 'there are no new chapters you can read.'
     elif new_chapters_integer == 1:
         message += 'there is 1 more chapter you can read!'
-    else:
+    elif new_chapters_integer > 1:
         message += f'there are {new_chapters_integer} more chapters you can read!'
+    
+    if new_chapters_integer < 0:
+        message = (f'Unfortunately, check for new chapters failed on {url_to_print} \n'
+                   f'({new_chapters_integer} chapters detected for this Manga)')
     
     print(message)
 
