@@ -293,6 +293,47 @@ for url in urls_batch_1:
                                 good_css_selector_num=0, 
                                 bad_css_selector='.not-found-content')
 
+# resource with other CSS elements
+webtoons_url = 'https://www.webtoons.com/en/dailySchedule'
+# connect webdriver to webtoons_url
+selenium_spider.get(webtoons_url)
+# and get all of this public source code with selenium and some preprocessing
+full_page_text_source = selenium_spider.page_source.replace('\n', '').replace('\t', '')
+
+# try to find suitable links to the manga in full_page_text_source
+list_of_useful_rows = re.findall(('(?:https://www.webtoons.com/en/)'
+                                  '(?:\w|-)+'
+                                  f'(?:/{user_input_1_adapted}/)'
+                                  '(?:list\?title_no=\d+)').lower(), 
+                                 full_page_text_source.lower())
+if len(list_of_useful_rows) == 0:
+    list_of_useful_rows = re.findall(('(?:https://www.webtoons.com/en/)'
+                                      '(?:\w|-)+/(?:\w|-)*'
+                                      f'(?:{user_input_1_adapted})'
+                                      '(?:\w|-)*(?:/)'
+                                      '(?:list\?title_no=\d+)').lower(), 
+                                     full_page_text_source.lower())
+
+if len(list_of_useful_rows) > 0:
+    # if at least one link to the manga found inside full_page_text_source
+    
+    # take the first of them
+    webtoons_link_to_manga = list_of_useful_rows[0]
+    # and redirect webdriver to it
+    selenium_spider.get(webtoons_link_to_manga)
+    
+    # check the page on new chapters of the manga
+    get_processed_core_page(selenium_object=selenium_spider, 
+                            good_css_selector='span:nth-child(6)', 
+                            url_to_print=webtoons_url, 
+                            chapters_already_read=user_input_2, 
+                            good_css_selector_num=1, 
+                            bad_css_selector='.error_area')
+    
+else:
+    
+    print(f'This Manga is not presented on {webtoons_url} but you still can try find here other Mangas!')
+
 print()
 
 selenium_spider.quit()
