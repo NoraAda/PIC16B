@@ -17,6 +17,17 @@ import re
 # In[ ]:
 
 
+# decorator for more comfortable output in CLI
+def print_decorator(func):
+    
+    def printer():
+        
+        print()
+        func()
+        print()
+    
+    return printer
+
 def extract_integer_from_string(string):
     
     '''
@@ -31,6 +42,7 @@ def extract_integer_from_string(string):
     
     return integer_value
 
+@print_decorator
 def get_user_input():
     
     global user_input_1, user_input_2, user_input_1_adapted
