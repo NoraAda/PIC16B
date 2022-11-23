@@ -118,21 +118,27 @@ def start_or_reload_display(driver_name='Chrome',
 def get_latest_chapter_text(selenium_object, 
                             good_css_selector, 
                             url_to_print, 
+                            title_css_selector=None, 
                             good_css_selector_num=0, 
+                            title_css_selector_num=0, 
                             bad_css_selector='.not-found-content'):
     
     '''
-    Extracts and returns a string value with useful text from specified good_css_selector.
+    Extracts and returns 2 string values with useful text from specified good_css_selector 
+    and title_css_selector (None if not specified) in a list with length 2.
     
     Expected text with a pointer to a number of the latest chapter in good_css_selector 
-    (when prepared webdriver at a page with a content about some kind of Manga).
+    (when prepared webdriver at a page with a content about some kind of Manga) 
+    as well as a title text in title_css_selector (optionally).
     
     selenium_object - prepared webdriver; 
     good_css_selector - CSS-selector where is the text about the latest chapter for the Manga presented; 
     url_to_print - specified url (of resource's mainpage, for example, as well as the direct page of the Manga); 
+    title_css_selector - CSS-selector where is the title text for the Manga presented; 
     
     good_css_selector_num - if there are more than one text-blocks are presented when handle 
                             with good_css_selector argument (0 is the first one from list); 
+    title_css_selector_num - on the analogy of good_css_selector_num for title_css_selector argument; 
     bad_css_selector - CSS-selector where is the text represents a page with 404 (not found) error 
                        to handle it instead of getting message about fail.
     
@@ -143,10 +149,20 @@ def get_latest_chapter_text(selenium_object,
     
     '''
     
+    title_text = None
+    
     try:
         latest_chapter_text = selenium_object.find_elements("css selector", 
                                                             good_css_selector
                               )[good_css_selector_num].text
+        if title_css_selector is not None:
+            try:
+                title_text = selenium_object.find_elements("css selector", 
+                                                           title_css_selector
+                             )[title_css_selector_num].text
+                title_text = re.sub('\s+', ' ', title_text.replace('\n', '')).strip()
+            except:
+                pass
     except IndexError:
         try:
             latest_chapter_text = selenium_object.find_element("css selector", bad_css_selector).text
@@ -156,7 +172,7 @@ def get_latest_chapter_text(selenium_object,
             print(f'Unfortunately, check for new chapters failed on {url_to_print} for this Manga')
         latest_chapter_text = None
     
-    return latest_chapter_text
+    return [latest_chapter_text, title_text]
 
 def get_new_chapters_integer(latest_chapter_text, 
                              chapters_already_read):
@@ -183,13 +199,15 @@ def get_new_chapters_integer(latest_chapter_text,
     return new_chapters_found
 
 def print_output_message(url_to_print, 
-                         new_chapters_integer):
+                         new_chapters_integer, 
+                         title_text=None):
     
     '''
     Constructs and prints a message depending on calculated count of new chapters of the Manga to output.
     
     url_to_print - specified url (of resource's mainpage, for example, as well as the direct page of the Manga); 
-    new_chapters_integer - the calculated count of new chapters that user can read.
+    new_chapters_integer - the calculated count of new chapters that user can read; 
+    title_text - the Manga's title.
     
     '''
     
@@ -202,9 +220,16 @@ def print_output_message(url_to_print,
     elif new_chapters_integer > 1:
         message += f'there are {new_chapters_integer} more chapters you can read!'
     
+    if title_text is not None:
+        message += f' \n(If you meant Manga titled as {title_text})'
+    
     if new_chapters_integer < 0:
+        if title_text is None:
+            text_by_title = 'for this Manga'
+        else:
+            text_by_title = f'if you meant Manga titled as {title_text}'
         message = (f'Unfortunately, check for new chapters failed on {url_to_print} \n'
-                   f'({new_chapters_integer} chapters detected for this Manga)')
+                   f'({new_chapters_integer} chapters detected {text_by_title})')
     
     print(message)
 
@@ -212,7 +237,9 @@ def get_processed_core_page(selenium_object,
                             good_css_selector, 
                             url_to_print, 
                             chapters_already_read, 
+                            title_css_selector=None, 
                             good_css_selector_num=0, 
+                            title_css_selector_num=0, 
                             bad_css_selector='.not-found-content'):
     
     '''
@@ -226,16 +253,19 @@ def get_processed_core_page(selenium_object,
     
     '''
     
-    latest_chapter_text = get_latest_chapter_text(selenium_object=selenium_object, 
-                                                  good_css_selector=good_css_selector, 
-                                                  url_to_print=url_to_print, 
-                                                  good_css_selector_num=good_css_selector_num, 
-                                                  bad_css_selector=bad_css_selector)
+    latest_chapter_text, title_text = get_latest_chapter_text(selenium_object=selenium_object, 
+                                                              good_css_selector=good_css_selector, 
+                                                              url_to_print=url_to_print, 
+                                                              title_css_selector=title_css_selector, 
+                                                              good_css_selector_num=good_css_selector_num, 
+                                                              title_css_selector_num=title_css_selector_num, 
+                                                              bad_css_selector=bad_css_selector)
     if latest_chapter_text is not None:
         new_chapters_count = get_new_chapters_integer(latest_chapter_text=latest_chapter_text, 
                                                       chapters_already_read=chapters_already_read)
         print_output_message(url_to_print=url_to_print, 
-                             new_chapters_integer=new_chapters_count)
+                             new_chapters_integer=new_chapters_count, 
+                             title_text=title_text)
 
 
 # # Selenium Based Manga Monitoring
@@ -274,7 +304,9 @@ for url in urls_batch_1:
                                 good_css_selector='li.wp-manga-chapter:nth-child(1) > a:nth-child(1)', 
                                 url_to_print=url, 
                                 chapters_already_read=user_input_2, 
+                                title_css_selector='.post-title', 
                                 good_css_selector_num=0, 
+                                title_css_selector_num=0, 
                                 bad_css_selector='.not-found-content')
         
     else:
@@ -290,7 +322,9 @@ for url in urls_batch_1:
                                 good_css_selector='span.font-meta:nth-child(2)', 
                                 url_to_print=url, 
                                 chapters_already_read=user_input_2, 
+                                title_css_selector='.post-title', 
                                 good_css_selector_num=0, 
+                                title_css_selector_num=0, 
                                 bad_css_selector='.not-found-content')
 
 # resource with other CSS elements
@@ -327,7 +361,9 @@ if len(list_of_useful_rows) > 0:
                             good_css_selector='span:nth-child(6)', 
                             url_to_print=webtoons_url, 
                             chapters_already_read=user_input_2, 
+                            title_css_selector='h1.subj', 
                             good_css_selector_num=1, 
+                            title_css_selector_num=0, 
                             bad_css_selector='.error_area')
     
 else:
