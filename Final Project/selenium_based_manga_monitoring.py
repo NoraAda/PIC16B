@@ -3,18 +3,19 @@
 
 # # Imports Block
 
-# In[ ]:
+# In[1]:
 
 
 from pyvirtualdisplay import Display
 from selenium import webdriver
 import selenium
 import re
+import time
 
 
 # # Functions Block
 
-# In[ ]:
+# In[3]:
 
 
 # decorator for more comfortable output in CLI
@@ -301,6 +302,8 @@ for url in urls_batch_1:
        list_of_heading_elements_found[0].text != 'Oops! page not found.'):
         # if not - process this page
         
+        time.sleep(6)
+        
         # check the page on new chapters of the manga
         get_processed_core_page(selenium_object=selenium_spider, 
                                 good_css_selector='li.wp-manga-chapter:nth-child(1) > a:nth-child(1)', 
@@ -318,6 +321,8 @@ for url in urls_batch_1:
         searching_url = url + f'/?s={user_input_1_readapted}&post_type=wp-manga'
         # and connect webdriver to this link
         selenium_spider.get(searching_url)
+        
+        time.sleep(6)
         
         # check the page on new chapters of the manga
         get_processed_core_page(selenium_object=selenium_spider, 
